@@ -3,6 +3,8 @@ package html.visitor;
 import html.ast.Body;
 import html.ast.HTMLProgram;
 import html.ast.Head;
+import html.ast.headElements.Link;
+import html.ast.headElements.Title;
 import html.ast.htmlElements.H1;
 import html.ast.htmlElements.H2;
 import html.ast.htmlElements.InnerPElements.B;
@@ -23,5 +25,7 @@ public interface HTMLVisitor {
     Object visit(I html, Object param);
     Object visit(U html, Object param);
     Object visit(StringElement html, Object param);
+    Object visit(Link link, Object param);
+    Object visit(Title title, Object param);
 
 }

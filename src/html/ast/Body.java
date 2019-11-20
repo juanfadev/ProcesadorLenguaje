@@ -15,6 +15,10 @@ public class Body extends AbstractASTNode{
 
     @Override
     public Object accept(HTMLVisitor v, Object param) {
-        return null;
+        return v.visit(this, param);
+    }
+
+    public List<BodyElement> getElements() {
+        return elements;
     }
 }

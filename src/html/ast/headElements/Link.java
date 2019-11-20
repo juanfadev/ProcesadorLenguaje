@@ -21,6 +21,6 @@ public class Link extends AbstractASTNode implements HeadElement, AttributesHTML
 
     @Override
     public Object accept(HTMLVisitor v, Object param) {
-        return null;
+        return v.visit(this, param);
     }
 }

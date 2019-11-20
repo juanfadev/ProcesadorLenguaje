@@ -5,6 +5,7 @@ import html.parser.Lexicon;
 import html.parser.Parser;
 import html.parser.Token;
 import html.parser.TokensId;
+import html.visitor.FindCSSVisitor;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,6 +19,9 @@ public class Main {
 		lex.resetIndex();
 		Parser parser = new Parser(lex);
 		AstHTML ast = parser.parse();
+		FindCSSVisitor buscar = new FindCSSVisitor();
+		System.out.println("Ruta al CSS:");
+		System.out.println(ast.accept(buscar, null));
 		//System.out.println(buscar.search("h1", "color",ast));
 	}
 

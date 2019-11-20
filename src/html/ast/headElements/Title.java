@@ -15,6 +15,6 @@ public class Title extends AbstractASTNode implements HeadElement {
 
     @Override
     public Object accept(HTMLVisitor v, Object param) {
-        return null;
+        return v.visit(this, param);
     }
 }

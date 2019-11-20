@@ -9,6 +9,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Head extends AbstractASTNode {
+
+
     //List of head elements. Now only has a constructor for title and link but could be extended with more elements.
     private List<HeadElement> headElements;
 
@@ -18,6 +20,11 @@ public class Head extends AbstractASTNode {
         this.headElements.add(title);
         this.headElements.add(link);
     }
+
+    public List<HeadElement> getHeadElements() {
+        return headElements;
+    }
+
 
     @Override
     public Object accept(HTMLVisitor v, Object param) {

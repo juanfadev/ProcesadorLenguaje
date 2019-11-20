@@ -16,6 +16,6 @@ public class P extends AbstractASTNode implements BodyElement {
 
     @Override
     public Object accept(HTMLVisitor v, Object param) {
-        return null;
+        return v.visit(this, param);
     }
 }
