@@ -41,6 +41,7 @@ public class Lexicon {
     boolean charBuffUsed = false;
     char charBuff;
     int line = 1; // indica la línea del fichero fuente
+    int col = 1;
 
     HashSet<Character> charText = new HashSet<Character>();
 
@@ -60,6 +61,7 @@ public class Lexicon {
                         break;*/
                     case '\n':
                         line++;
+                        col = 1;
                         break;
                     case '\r':
                     case '\t':
@@ -73,6 +75,7 @@ public class Lexicon {
                 }
             }
             filereader.close();
+            tokens.add(new Token(TokensId.EOF, "EOF", line));
         } catch (IOException e) {
             System.out.println("Error E/S: " + e);
         }
@@ -110,18 +113,18 @@ public class Lexicon {
                 tokens.add(new Token(TokensId.LINKOPEN, tag, line));
                 break;
             default:
-                errorLexico("No existe la etiqueta abierta "+ tag);
+                errorLexico("No existe la etiqueta abierta " + tag);
         }
-        readProperty();
+        readProperties();
     }
 
-    private void readProperty() throws IOException {
+    private void readProperties() throws IOException {
         String lexeme = "";
         char value = ' ';
         while (value != '>') {
             value = nextChar();
             while (value != '=') {
-                if (value == ' ') {
+                if (value == ' ' || value == '"') {
                     errorLexico("Espacio dentro de una string de propiedad");
                 }
                 lexeme += value;
@@ -131,16 +134,21 @@ public class Lexicon {
             lexeme = "";
             tokens.add(new Token(TokensId.EQUAL, "=", line));
             value = nextChar();
-            while (value != ' ' && value != '>') {
+            if (value == '"') {
+                value = nextChar();
+            }
+            while (value != '"') {
                 if (value == ' ') {
                     errorLexico("Espacio dentro de una string de propiedad");
                 }
                 lexeme += value;
                 value = nextChar();
             }
+            value = nextChar();
             tokens.add(new Token(TokensId.VALUE, lexeme, line));
             lexeme = "";
         }
+        returnChar('>');
     }
 
     // ++
@@ -202,6 +210,7 @@ public class Lexicon {
             charBuffUsed = false;
             return charBuff;
         } else {
+            col++;
             int valor = filereader.read();
             return ((char) valor);
         }
@@ -210,6 +219,7 @@ public class Lexicon {
     void returnChar(char r) {
         charBuffUsed = true;
         charBuff = r;
+        col --;
     }
 
     boolean deleteComment() throws IOException {
@@ -226,7 +236,7 @@ public class Lexicon {
     }
 
     void errorLexico(String e) {
-        System.out.println("Error léxico en : " + e);
+        System.out.println("Error léxico en línea " + line + ", Columna " + col + " :" + e);
     }
 
     public void resetIndex() {

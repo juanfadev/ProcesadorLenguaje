@@ -1,6 +1,8 @@
 package html.main;
 
+import html.ast.AstHTML;
 import html.parser.Lexicon;
+import html.parser.Parser;
 import html.parser.Token;
 import html.parser.TokensId;
 
@@ -13,9 +15,9 @@ public class Main {
 		FileReader filereader = new FileReader ("res/EX4.HTML");
 		Lexicon lex = new Lexicon(filereader);
 		listaTokens(lex);
-		//lex.resetIndex();
-		//Parser parser = new Parser (lex);
-		//AstCss ast = parser.parse();
+		lex.resetIndex();
+		Parser parser = new Parser(lex);
+		AstHTML ast = parser.parse();
 		//System.out.println(buscar.search("h1", "color",ast));
 	}
 

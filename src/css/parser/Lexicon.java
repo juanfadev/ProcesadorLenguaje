@@ -16,6 +16,7 @@ public class Lexicon {
     boolean charBuffUsed = false;
     char charBuff;
     int line = 1; // indica la línea del fichero fuente
+    int col = 1;
 
     HashSet<Character> charText = new HashSet<Character>();
 
@@ -44,6 +45,7 @@ public class Lexicon {
                         break;
                     case '\n':
                         line++;
+                        col = 1;
                         break;
                     case '\r':
                     case '\t':
@@ -156,12 +158,14 @@ public class Lexicon {
             charBuffUsed = false;
             return charBuff;
         } else {
+            col++;
             int valor = filereader.read();
             return ((char) valor);
         }
     }
 
     void returnChar(char r) {
+        col--;
         charBuffUsed = true;
         charBuff = r;
     }
