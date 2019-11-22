@@ -15,4 +15,8 @@ public class H1 extends AbstractASTNode implements BodyElement {
     public Object accept(HTMLVisitor v, Object param) {
             return v.visit(this, param);
     }
+
+    public String getContent() {
+        return content;
+    }
 }

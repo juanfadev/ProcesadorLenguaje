@@ -16,4 +16,9 @@ public class B extends AbstractASTNode implements InnerPElement {
     public Object accept(HTMLVisitor v, Object param) {
         return v.visit(this, param);
     }
+
+    @Override
+    public String getValue() {
+        return value;
+    }
 }

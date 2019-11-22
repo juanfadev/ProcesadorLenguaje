@@ -1,7 +1,6 @@
 package html.parser;
 
 
-import html.ast.AstHTML;
 import html.ast.Body;
 import html.ast.HTMLProgram;
 import html.ast.Head;
@@ -52,12 +51,7 @@ public class Parser {
         this.lex = lex;
     }
 
-    public AstHTML parse() {
-        AstHTML ast = parseProgram();
-        return ast;
-    }
-
-    private HTMLProgram parseProgram() {
+    public HTMLProgram parse() {
         HTMLProgram prog = null;
         Head head;
         Body body;
