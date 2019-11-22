@@ -6,21 +6,26 @@ import html.parser.Lexicon;
 import html.parser.Parser;
 import html.visitor.FindCSSVisitor;
 import html.visitor.RenderVisitor;
+import render.ImageBlock;
+import render.StyledBlock;
 import render.StyledLine;
 import render.StyledString;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.image.BufferedImage;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 public class Browser {
     private static JFrame frame;
-    List<StyledLine> page;
+    List<StyledBlock> page;
 
     public static void main(String[] args) {
         frame = new JFrame("Web Browser");
@@ -59,54 +64,39 @@ public class Browser {
         addNodes();
     }
 
-    private void addNodes() {
-        for (StyledLine line : page) {
-            StyleContext sc = new StyleContext();
-            StyledDocument doc = new DefaultStyledDocument(sc);
-            try {
-                for (StyledString text : line.getStrings()) {
-                    MutableAttributeSet attrs = new SimpleAttributeSet();
-                    Color color = getColorByName(text.getProperty("color"));
-                    String pixelSize = text.getProperty("font-size");
-                    //https://docs.oracle.com/javase/7/docs/api/java/awt/Font.html#getSize()
-                    int fontSize = (int) (Integer.parseInt(pixelSize == null ? "12" : pixelSize.replace("px", "")) * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0);
-                    StyleConstants.setFontSize(attrs, fontSize);
-                    StyleConstants.setForeground(attrs, color == null ? Color.BLACK : color);
-                    switch (text.getProperty("text-align")) {
-                        case ("center"):
-                            StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
-                            break;
-                        case ("left"):
-                            StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_LEFT);
-                            break;
-                        case ("right"):
-                            StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_RIGHT);
-                            break;
-                        case ("justify"):
-                            StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_JUSTIFIED);
-                            break;
-                        default:
-                            StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
-                            System.out.println("No alignment for text");
-                    }
 
-                    switch (text.getProperty("font-style")) {
-                        case ("bold"):
-                            StyleConstants.setBold(attrs, true);
-                            break;
-                        case ("underlined"):
-                            StyleConstants.setUnderline(attrs, true);
-                            break;
-                        case ("italic"):
-                            StyleConstants.setItalic(attrs, true);
-                            break;
-                        default:
-                            System.out.println("No style for text");
-                    }
-                    doc.insertString(doc.getLength(), text.getString(), attrs);
-                }
+    private void addNodes() {
+        for (StyledBlock line : page) {
+            if (line instanceof StyledLine) {
+                addStyledLine((StyledLine) line);
+            } else if (line instanceof ImageBlock) {
+                addImageBlock((ImageBlock) line);
+            }
+        }
+    }
+
+    private void addStyledLine(StyledLine line) {
+        StyleContext sc = new StyleContext();
+        StyledDocument doc = new DefaultStyledDocument(sc);
+        try {
+            for (StyledString text : line.getStrings()) {
                 MutableAttributeSet attrs = new SimpleAttributeSet();
-                switch (line.getStrings().get(0).getProperty("text-align")) {
+                Color color = getColorByName(text.getProperty("color"));
+                String pixelSize = text.getProperty("font-size");
+                int fontSize;
+                if (pixelSize == null) {
+                    fontSize = 14;
+                } else if (pixelSize.contains("px")) {
+                    //https://docs.oracle.com/javase/7/docs/api/java/awt/Font.html#getSize()
+                    fontSize = (int) (Integer.parseInt(pixelSize.replace("px", "")) * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0);
+                } else if (pixelSize.contains("pt")) {
+                    fontSize = Integer.parseInt(pixelSize.replace("pt", ""));
+                } else {
+                    fontSize = 14;
+                }
+                StyleConstants.setFontSize(attrs, fontSize);
+                StyleConstants.setForeground(attrs, color == null ? Color.BLACK : color);
+                switch (text.getProperty("text-align")) {
                     case ("center"):
                         StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
                         break;
@@ -120,26 +110,95 @@ public class Browser {
                         StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_JUSTIFIED);
                         break;
                     default:
-                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
+                        StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_LEFT);
                         System.out.println("No alignment for text");
                 }
-                doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
-            } catch (BadLocationException ex) {
-                System.out.println("Error, bad location");
+
+                switch (text.getProperty("font-style")) {
+                    case ("bold"):
+                        StyleConstants.setBold(attrs, true);
+                        break;
+                    case ("underlined"):
+                        StyleConstants.setUnderline(attrs, true);
+                        break;
+                    case ("italic"):
+                        StyleConstants.setItalic(attrs, true);
+                        break;
+                    default:
+                        System.out.println("No style for text");
+                }
+                doc.insertString(doc.getLength(), text.getString(), attrs);
             }
-            JTextPane tA = new JTextPane(doc);
-            tA.setEditable(false);
+            MutableAttributeSet attrs = new SimpleAttributeSet();
+            switch (line.getStrings().get(0).getProperty("text-align")) {
+                case ("center"):
+                    StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
+                    break;
+                case ("left"):
+                    StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_LEFT);
+                    break;
+                case ("right"):
+                    StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_RIGHT);
+                    break;
+                case ("justify"):
+                    StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_JUSTIFIED);
+                    break;
+                default:
+                    StyleConstants.setAlignment(attrs, StyleConstants.ALIGN_CENTER);
+                    System.out.println("No alignment for text");
+            }
+            doc.setParagraphAttributes(0, doc.getLength(), attrs, false);
+        } catch (BadLocationException ex) {
+            System.out.println("Error, bad location");
+        }
+        JTextPane tA = new JTextPane(doc);
+        tA.setEditable(false);
+        nextGridY++;
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.gridy = nextGridY;
+        tA.setPreferredSize(new Dimension(10, getContentHeight(tA.getStyledDocument())));
+        htmlElementsPanel.add(tA, c);
+    }
+
+    /**
+     * Resilient method.
+     * If url is not accessible, alt is shown.
+     * If neither url neither alt is present, it will not add anything.
+     *
+     * @param line
+     */
+    private void addImageBlock(ImageBlock line) {
+        int width = line.getAttributes().get("width") != null ? Integer.parseInt(line.getAttributes().get("width")) : 0;
+        int height = line.getAttributes().get("height") != null ? Integer.parseInt(line.getAttributes().get("width")) : 0;
+        URL src;
+        JLabel wIcon = new JLabel(line.getAttributes().get("alt"));
+        BufferedImage wPic = null;
+        try {
+            if (!line.getAttributes().get("src").contains("http")) {
+                src = this.getClass().getResource("/" + line.getAttributes().get("src"));
+            } else {
+                src = new URL(line.getAttributes().get("src"));
+            }
+            wPic = ImageIO.read(src);
+            if (width != 0 && height != 0) {
+                wIcon = new JLabel(new ImageIcon(new ImageIcon(wPic).getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT)));
+            } else {
+                wIcon = new JLabel(new ImageIcon(wPic));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
             nextGridY++;
             c.gridx = 0;
             c.gridwidth = 3;
             c.gridy = nextGridY;
-            tA.setPreferredSize(new Dimension(10, getContentHeight(tA.getStyledDocument())));
-            htmlElementsPanel.add(tA, c);
+            htmlElementsPanel.add(wIcon, c);
         }
     }
 
-    private List<StyledLine> parseHTML() throws IOException {
-        FileReader filereader = new FileReader("res/EX4.HTML");
+    private List<StyledBlock> parseHTML() throws IOException {
+        FileReader filereader = new FileReader("res/EX5.HTML");
         Lexicon lex = new Lexicon(filereader);
         Parser parser = new Parser(lex);
         HTMLProgram ast = parser.parse();
@@ -152,7 +211,7 @@ public class Browser {
         AstCss astCss = cssParser.parse();
 
         RenderVisitor render = new RenderVisitor();
-        List<StyledLine> page = (List<StyledLine>) render.visit(ast, astCss);
+        List<StyledBlock> page = (List<StyledBlock>) render.visit(ast, astCss);
         System.out.println(page);
         return page;
     }

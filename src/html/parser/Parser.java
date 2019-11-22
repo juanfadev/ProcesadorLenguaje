@@ -7,11 +7,8 @@ import html.ast.Head;
 import html.ast.headElements.HeadElement;
 import html.ast.headElements.Link;
 import html.ast.headElements.Title;
-import html.ast.htmlElements.BodyElement;
-import html.ast.htmlElements.H1;
-import html.ast.htmlElements.H2;
+import html.ast.htmlElements.*;
 import html.ast.htmlElements.InnerPElements.*;
-import html.ast.htmlElements.P;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +28,7 @@ public class Parser {
             add(TokensId.H1OPEN);
             add(TokensId.H2OPEN);
             add(TokensId.POPEN);
+            add(TokensId.IMGOPEN);
         }
     };
 
@@ -159,6 +157,39 @@ public class Parser {
         return l;
     }
 
+    private IMG parseImageElement() {
+        IMG l = null;
+        Map<String, String> attributes = new HashMap<>();
+        Token token = lex.getToken();
+        if (token.getToken() == TokensId.IMGOPEN) {
+            token = lex.getToken();
+            while (token.getToken() == TokensId.PROPERTY) {
+                String property = token.getLexeme();
+                token = lex.getToken();
+                if (token.getToken() == TokensId.EQUAL) {
+                    token = lex.getToken();
+                    if (token.getToken() == TokensId.VALUE) {
+                        String value = token.getLexeme();
+                        attributes.put(property, value);
+                        token = lex.getToken();
+                    } else {
+                        errorSintactico("Error en propiedad", token.getLine());
+                    }
+                } else {
+                    errorSintactico("Error en propiedad", token.getLine());
+                }
+            }
+            if (token.getToken() == TokensId.TAGCLOSE) {
+                l = new IMG(token.getLine(), token.getCol(), attributes);
+            } else {
+                errorSintactico("No se ha cerrado correctamente LINK", token.getLine());
+            }
+        }
+        return l;
+    }
+
+
+
     private Title parseTitleElement() {
         StringBuilder text = new StringBuilder();
         Title t = null;
@@ -217,6 +248,10 @@ public class Parser {
             case POPEN:
                 lex.returnLastToken();
                 bodyEl = parsePElement();
+                break;
+            case IMGOPEN:
+                lex.returnLastToken();
+                bodyEl = parseImageElement();
                 break;
             default:
                 errorSintactico("Error, etiqueta '" + token.getLexeme() + "' no reconocida en el head", token.getLine());

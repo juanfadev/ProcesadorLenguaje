@@ -132,7 +132,8 @@ public class Lexicon {
         if (valor == 'p') {
             ;
             valor = nextChar();
-            if (valor == 'x') {
+            // Cambiamos aqui para tener px y pt
+            if (valor == 'x' || valor == 't') {
                 lexReturned = lexReturned + (valor);
             } else {
                 errorLexico("Encontrado " + lexReturned + ". Se esperada un token SIZE.");

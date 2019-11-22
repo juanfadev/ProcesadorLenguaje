@@ -7,6 +7,7 @@ import html.ast.headElements.Link;
 import html.ast.headElements.Title;
 import html.ast.htmlElements.H1;
 import html.ast.htmlElements.H2;
+import html.ast.htmlElements.IMG;
 import html.ast.htmlElements.InnerPElements.B;
 import html.ast.htmlElements.InnerPElements.I;
 import html.ast.htmlElements.InnerPElements.StringElement;
@@ -27,5 +28,5 @@ public interface HTMLVisitor {
     Object visit(StringElement html, Object param);
     Object visit(Link link, Object param);
     Object visit(Title title, Object param);
-
+    Object visit(IMG img, Object param);
 }

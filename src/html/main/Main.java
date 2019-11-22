@@ -18,7 +18,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        FileReader filereader = new FileReader("res/EX4.HTML");
+        FileReader filereader = new FileReader("res/EX5.HTML");
         Lexicon lex = new Lexicon(filereader);
         listaTokens(lex);
         lex.resetIndex();

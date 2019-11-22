@@ -107,10 +107,18 @@ public class Lexicon {
         }
     }
 
+    /**
+     * Aqui tokenizamos las tags abiertas (Link e img)
+     * @param tag
+     * @throws IOException
+     */
     private void readOpenTag(String tag) throws IOException {
         switch (tag) {
             case ("<link"):
                 tokens.add(new Token(TokensId.LINKOPEN, tag, line));
+                break;
+            case ("<img"):
+                tokens.add(new Token(TokensId.IMGOPEN, tag, line));
                 break;
             default:
                 errorLexico("No existe la etiqueta abierta " + tag);

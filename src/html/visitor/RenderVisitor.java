@@ -7,11 +7,10 @@ import html.ast.HTMLProgram;
 import html.ast.Head;
 import html.ast.headElements.Link;
 import html.ast.headElements.Title;
-import html.ast.htmlElements.BodyElement;
-import html.ast.htmlElements.H1;
-import html.ast.htmlElements.H2;
+import html.ast.htmlElements.*;
 import html.ast.htmlElements.InnerPElements.*;
-import html.ast.htmlElements.P;
+import render.ImageBlock;
+import render.StyledBlock;
 import render.StyledLine;
 import render.StyledString;
 
@@ -42,9 +41,9 @@ public class RenderVisitor implements HTMLVisitor {
 
     @Override
     public Object visit(Body htmlProgram, Object param) {
-        List<StyledLine> bodyElements = new ArrayList<>();
+        List<StyledBlock> bodyElements = new ArrayList<>();
         for (BodyElement e : htmlProgram.getElements()) {
-            bodyElements.add((StyledLine) e.accept(this, null));
+            bodyElements.add((StyledBlock) e.accept(this, null));
         }
         return bodyElements;
     }
@@ -131,5 +130,11 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(Title title, Object param) {
         return null;
+    }
+
+    @Override
+    public Object visit(IMG img, Object param) {
+        ImageBlock imgB = new ImageBlock(img.getAttributes());
+        return imgB;
     }
 }

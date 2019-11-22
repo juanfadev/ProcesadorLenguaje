@@ -8,6 +8,7 @@ import html.ast.headElements.Link;
 import html.ast.headElements.Title;
 import html.ast.htmlElements.H1;
 import html.ast.htmlElements.H2;
+import html.ast.htmlElements.IMG;
 import html.ast.htmlElements.InnerPElements.B;
 import html.ast.htmlElements.InnerPElements.I;
 import html.ast.htmlElements.InnerPElements.StringElement;
@@ -86,6 +87,11 @@ public class FindCSSVisitor implements HTMLVisitor {
 
     @Override
     public Object visit(Title title, Object param) {
+        return null;
+    }
+
+    @Override
+    public Object visit(IMG img, Object param) {
         return null;
     }
 }
