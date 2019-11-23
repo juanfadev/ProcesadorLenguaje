@@ -9,11 +9,10 @@ import html.parser.Token;
 import html.parser.TokensId;
 import html.visitor.FindCSSVisitor;
 import html.visitor.RenderVisitor;
-import render.StyledLine;
+import render.Page;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.List;
 
 public class Main {
 
@@ -32,7 +31,7 @@ public class Main {
         css.parser.Parser cssParser = new css.parser.Parser(cssLex);
         AstCss astCss = cssParser.parse();
         RenderVisitor render = new RenderVisitor();
-        List<StyledLine> page = (List<StyledLine>) render.visit(ast, astCss);
+        Page page = (Page) render.visit(ast, astCss);
         System.out.println(page);
     }
 

@@ -5,14 +5,12 @@ import css.visitor.BuscamParamCSSVisitor;
 import html.ast.Body;
 import html.ast.HTMLProgram;
 import html.ast.Head;
+import html.ast.headElements.HeadElement;
 import html.ast.headElements.Link;
 import html.ast.headElements.Title;
 import html.ast.htmlElements.*;
 import html.ast.htmlElements.InnerPElements.*;
-import render.ImageBlock;
-import render.StyledBlock;
-import render.StyledLine;
-import render.StyledString;
+import render.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,11 +29,18 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(HTMLProgram htmlProgram, Object param) {
         astCss = (AstCss) param;
-        return htmlProgram.getBody().accept(this, null);
+        Page p = new Page((List<StyledBlock>)htmlProgram.getBody().accept(this, null), (String) htmlProgram.getHead().accept(this,null));
+        return p;
     }
 
     @Override
     public Object visit(Head htmlProgram, Object param) {
+        for(HeadElement hE : htmlProgram.getHeadElements()){
+            Object a = hE.accept(this, null);
+            if (a != null){
+                return a;
+            }
+        }
         return null;
     }
 
@@ -129,7 +134,7 @@ public class RenderVisitor implements HTMLVisitor {
 
     @Override
     public Object visit(Title title, Object param) {
-        return null;
+        return title.getContent();
     }
 
     @Override

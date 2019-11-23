@@ -6,10 +6,7 @@ import html.parser.Lexicon;
 import html.parser.Parser;
 import html.visitor.FindCSSVisitor;
 import html.visitor.RenderVisitor;
-import render.ImageBlock;
-import render.StyledBlock;
-import render.StyledLine;
-import render.StyledString;
+import render.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -211,9 +208,10 @@ public class Browser {
         AstCss astCss = cssParser.parse();
 
         RenderVisitor render = new RenderVisitor();
-        List<StyledBlock> page = (List<StyledBlock>) render.visit(ast, astCss);
+        Page page = (Page) render.visit(ast, astCss);
         System.out.println(page);
-        return page;
+        frame.setTitle(page.getTitle());
+        return page.getBlocks();
     }
 
     private static Color getColorByName(String name) {

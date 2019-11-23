@@ -13,6 +13,10 @@ public class Title extends AbstractASTNode implements HeadElement {
         this.content = content;
     }
 
+    public String getContent() {
+        return content;
+    }
+
     @Override
     public Object accept(HTMLVisitor v, Object param) {
         return v.visit(this, param);
