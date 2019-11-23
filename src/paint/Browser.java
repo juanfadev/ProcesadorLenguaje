@@ -12,6 +12,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
@@ -44,20 +46,56 @@ public class Browser {
 
     private JPanel htmlElementsPanel;
     private JScrollPane scroll;
+    private JTextField url;
     int nextGridY = -1;
     GridBagConstraints c;
 
     private void createUIComponents() {
         htmlElementsPanel = new JPanel(new GridBagLayout());
-        try {
-            page = parseHTML();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         c = new GridBagConstraints();
         c.weightx = 1;
         c.weighty = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
+        createTopPanel();
+    }
+
+    private void createTopPanel() {
+        JPanel topPanel = new JPanel(new GridBagLayout());
+        c.gridx = 0;
+        c.gridy = 0;
+        url = new JTextField();
+        url.setText("res/EX5.HTML");
+        url.setPreferredSize(new Dimension(200, 30));
+        topPanel.add(url, c);
+        c.gridx = 2;
+        c.gridy = 0;
+        JButton go = new JButton("Buscar");
+        go.setPreferredSize(new Dimension(20, 50));
+        go.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createNodes();
+            }
+        });
+        topPanel.add(go, c);
+        nextGridY++;
+        c.gridx = 0;
+        c.gridwidth = 3;
+        c.gridy = nextGridY;
+        htmlElementsPanel.add(topPanel, c);
+    }
+
+    private void createNodes() {
+        if (htmlElementsPanel.getComponentCount() > 1) {
+            for (int i = htmlElementsPanel.getComponentCount()-1; i >0; i --) {
+                htmlElementsPanel.remove(i);
+            }
+        }
+        try {
+            page = parseHTML(url.getText());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         addNodes();
     }
 
@@ -124,6 +162,7 @@ public class Browser {
                     default:
                         System.out.println("No style for text");
                 }
+                doc.insertString(doc.getLength(), " ", null); // Whitespace between tags
                 doc.insertString(doc.getLength(), text.getString(), attrs);
             }
             MutableAttributeSet attrs = new SimpleAttributeSet();
@@ -194,8 +233,8 @@ public class Browser {
         }
     }
 
-    private List<StyledBlock> parseHTML() throws IOException {
-        FileReader filereader = new FileReader("res/EX5.HTML");
+    private List<StyledBlock> parseHTML(String htmlUrl) throws IOException {
+        FileReader filereader = new FileReader(htmlUrl);
         Lexicon lex = new Lexicon(filereader);
         Parser parser = new Parser(lex);
         HTMLProgram ast = parser.parse();

@@ -65,7 +65,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(H1 html, Object param) {
         StyledLine sL = new StyledLine();
-        StyledString sS = new StyledString(html.getContent());
+        StyledString sS = new StyledString(html.getContent().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search("h1", property, astCss));
         }
@@ -76,7 +76,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(H2 html, Object param) {
         StyledLine sL = new StyledLine();
-        StyledString sS = new StyledString(html.getContent());
+        StyledString sS = new StyledString(html.getContent().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search("h2", property, astCss));
         }
@@ -87,7 +87,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(B html, Object param) {
         String upperTag = (String) param;
-        StyledString sS = new StyledString(html.getValue());
+        StyledString sS = new StyledString(html.getValue().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search(upperTag, property, astCss));
         }
@@ -98,7 +98,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(I html, Object param) {
         String upperTag = (String) param;
-        StyledString sS = new StyledString(html.getValue());
+        StyledString sS = new StyledString(html.getValue().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search(upperTag, property, astCss));
         }
@@ -109,7 +109,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(U html, Object param) {
         String upperTag = (String) param;
-        StyledString sS = new StyledString(html.getValue());
+        StyledString sS = new StyledString(html.getValue().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search(upperTag, property, astCss));
         }
@@ -120,7 +120,7 @@ public class RenderVisitor implements HTMLVisitor {
     @Override
     public Object visit(StringElement html, Object param) {
         String upperTag = (String) param;
-        StyledString sS = new StyledString(html.getValue());
+        StyledString sS = new StyledString(html.getValue().trim());
         for (String property : this.properties) {
             sS.addProperty(property, css.search(upperTag, property, astCss));
         }
