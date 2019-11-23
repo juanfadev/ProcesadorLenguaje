@@ -19,6 +19,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
@@ -234,7 +235,13 @@ public class Browser {
     }
 
     private List<StyledBlock> parseHTML(String htmlUrl) throws IOException {
-        FileReader filereader = new FileReader(htmlUrl);
+        InputStreamReader filereader;
+        // Preparing for online browsing experience
+        if (htmlUrl.contains("http")) {
+            filereader = new InputStreamReader(new URL(htmlUrl).openConnection().getInputStream());
+        } else{
+            filereader = new FileReader(htmlUrl);
+        }
         Lexicon lex = new Lexicon(filereader);
         Parser parser = new Parser(lex);
         HTMLProgram ast = parser.parse();

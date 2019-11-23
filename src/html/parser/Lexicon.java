@@ -1,7 +1,7 @@
 package html.parser;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class Lexicon {
@@ -37,7 +37,7 @@ public class Lexicon {
     List<Token> tokens = new ArrayList<Token>();
     int i = 0; // Último token entregado en getToken()
     // Gestión de lectura del fichero
-    FileReader filereader;
+    InputStreamReader filereader;
     boolean charBuffUsed = false;
     char charBuff;
     int line = 1; // indica la línea del fichero fuente
@@ -45,7 +45,7 @@ public class Lexicon {
 
     HashSet<Character> charText = new HashSet<Character>();
 
-    public Lexicon(FileReader f) {
+    public Lexicon(InputStreamReader f) {
         filereader = f;
         String lex;
         try {
