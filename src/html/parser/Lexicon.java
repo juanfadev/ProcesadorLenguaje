@@ -86,29 +86,34 @@ public class Lexicon {
         boolean openTag = false;
         String lexeme = "<";
         char value = nextChar();
-        while (value != '>') {
-            if (value == ' ') {
-                readOpenTag(lexeme);
-                openTag = true;
-            }
-            lexeme += value;
-            value = nextChar();
-        }
-        if (!openTag) {
-            lexeme += value;
-            TokensId tokenId = stringTokenMap.get(lexeme);
-            if (tokenId != null) {
-                tokens.add(new Token(tokenId, lexeme, line));
-            } else {
-                errorLexico("Error, no existe la etiqueta " + lexeme);
-            }
+        if (value == '!') {
+            deleteComment();
         } else {
-            tokens.add(new Token(TokensId.TAGCLOSE, ">", line));
+            while (value != '>') {
+                if (value == ' ') {
+                    readOpenTag(lexeme);
+                    openTag = true;
+                }
+                lexeme += value;
+                value = nextChar();
+            }
+            if (!openTag) {
+                lexeme += value;
+                TokensId tokenId = stringTokenMap.get(lexeme);
+                if (tokenId != null) {
+                    tokens.add(new Token(tokenId, lexeme, line));
+                } else {
+                    errorLexico("Error, no existe la etiqueta " + lexeme);
+                }
+            } else {
+                tokens.add(new Token(TokensId.TAGCLOSE, ">", line));
+            }
         }
     }
 
     /**
      * Aqui tokenizamos las tags abiertas (Link e img)
+     *
      * @param tag
      * @throws IOException
      */
@@ -227,21 +232,53 @@ public class Lexicon {
     void returnChar(char r) {
         charBuffUsed = true;
         charBuff = r;
-        col --;
+        col--;
     }
 
     boolean deleteComment() throws IOException {
-        if (nextChar() != '*') {
-            errorLexico("Se esperaba un comentario.");
-            return false;
+        boolean isComment = true;
+        char value = nextChar();
+        for (int i = 0; i < 2; i++) {
+            if (value != '-') {
+                isComment = false;
+            }
+            value = nextChar();
+        }
+        if (isComment) {
+            findEndComment(value);
         } else {
-            char value = nextChar();
-            while (value != '*') {
+            while (value != '>') {
                 value = nextChar();
             }
-            return value == '/';
         }
+        return value == '>';
     }
+
+    /**
+     * Tries to find '-->'
+     *
+     * @param value
+     * @throws IOException
+     */
+    private boolean findEndComment(char value) throws IOException {
+        while (value != '-') {
+            value = nextChar();
+            if (value == (char) -1){
+                errorLexico("No se ha cerrado el comentario");
+                return false;
+            }
+        }
+        int dashCount = 0;
+        while (value == '-') {
+            dashCount++;
+            value = nextChar();
+        }
+        if (value != '>' || dashCount < 2) {
+            findEndComment(value);
+        }
+        return true;
+    }
+
 
     void errorLexico(String e) {
         System.out.println("Error léxico en línea " + line + ", Columna " + col + " :" + e);
