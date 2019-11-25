@@ -17,7 +17,7 @@ import java.io.IOException;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        FileReader filereader = new FileReader("res/EX6.HTML");
+        FileReader filereader = new FileReader("res/EX7.HTML");
         Lexicon lex = new Lexicon(filereader);
         listaTokens(lex);
         lex.resetIndex();

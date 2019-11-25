@@ -26,6 +26,14 @@ public class RenderVisitor implements HTMLVisitor {
         add("font-style");
     }});
 
+    List<String> attributes = Collections.unmodifiableList(new ArrayList<String>() {{
+        add("color");
+        add("font-size");
+        add("text-align");
+        add("font-style");
+    }});
+
+
     @Override
     public Object visit(HTMLProgram htmlProgram, Object param) {
         astCss = (AstCss) param;
@@ -57,7 +65,7 @@ public class RenderVisitor implements HTMLVisitor {
     public Object visit(P p, Object param) {
         StyledLine line = new StyledLine();
         for (InnerPElement e : p.getElements()) {
-            line.addStyledString((StyledString) e.accept(this, "p"));
+            line.addStyledString((StyledContent) e.accept(this, "p"));
         }
         return line;
     }
@@ -141,5 +149,23 @@ public class RenderVisitor implements HTMLVisitor {
     public Object visit(IMG img, Object param) {
         ImageBlock imgB = new ImageBlock(img.getAttributes());
         return imgB;
+    }
+
+    @Override
+    public Object visit(A a, Object param) {
+        UrlBlock urlB = new UrlBlock(a.getAttributes(), (StyledBlock) a.getInnerElement().accept(this, param));
+        return urlB;
+    }
+
+    @Override
+    public Object visit(InnerA html, Object param) {
+        String upperTag = (String) param;
+        StyledLink sS = new StyledLink(html.getValue().trim(), html.getAttributes());
+        for (String property : this.properties) {
+            sS.addProperty(property, css.search(upperTag, property, astCss));
+        }
+        sS.addProperty("font-style", "underlined");
+        sS.addProperty("color", "blue");
+        return sS;
     }
 }

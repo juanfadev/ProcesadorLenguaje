@@ -5,14 +5,8 @@ import html.ast.HTMLProgram;
 import html.ast.Head;
 import html.ast.headElements.Link;
 import html.ast.headElements.Title;
-import html.ast.htmlElements.H1;
-import html.ast.htmlElements.H2;
-import html.ast.htmlElements.IMG;
-import html.ast.htmlElements.InnerPElements.B;
-import html.ast.htmlElements.InnerPElements.I;
-import html.ast.htmlElements.InnerPElements.StringElement;
-import html.ast.htmlElements.InnerPElements.U;
-import html.ast.htmlElements.P;
+import html.ast.htmlElements.*;
+import html.ast.htmlElements.InnerPElements.*;
 
 public interface HTMLVisitor {
 
@@ -29,4 +23,6 @@ public interface HTMLVisitor {
     Object visit(Link link, Object param);
     Object visit(Title title, Object param);
     Object visit(IMG img, Object param);
+    Object visit(A a, Object param);
+    Object visit(InnerA innerA, Object param);
 }

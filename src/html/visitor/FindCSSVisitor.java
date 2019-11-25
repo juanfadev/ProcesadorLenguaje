@@ -6,14 +6,8 @@ import html.ast.Head;
 import html.ast.headElements.HeadElement;
 import html.ast.headElements.Link;
 import html.ast.headElements.Title;
-import html.ast.htmlElements.H1;
-import html.ast.htmlElements.H2;
-import html.ast.htmlElements.IMG;
-import html.ast.htmlElements.InnerPElements.B;
-import html.ast.htmlElements.InnerPElements.I;
-import html.ast.htmlElements.InnerPElements.StringElement;
-import html.ast.htmlElements.InnerPElements.U;
-import html.ast.htmlElements.P;
+import html.ast.htmlElements.*;
+import html.ast.htmlElements.InnerPElements.*;
 
 public class FindCSSVisitor implements HTMLVisitor {
     @Override
@@ -92,6 +86,16 @@ public class FindCSSVisitor implements HTMLVisitor {
 
     @Override
     public Object visit(IMG img, Object param) {
+        return null;
+    }
+
+    @Override
+    public Object visit(A a, Object param) {
+        return null;
+    }
+
+    @Override
+    public Object visit(InnerA innerA, Object param) {
         return null;
     }
 }

@@ -30,6 +30,7 @@ public class Lexicon {
             put("</b>", TokensId.BCLOSE);
             put("<u>", TokensId.UOPEN);
             put("</u>", TokensId.UCLOSE);
+            put("</a>", TokensId.ACLOSE);
         }
     };
 
@@ -124,6 +125,9 @@ public class Lexicon {
                 break;
             case ("<img"):
                 tokens.add(new Token(TokensId.IMGOPEN, tag, line));
+                break;
+            case("<a"):
+                tokens.add(new Token(TokensId.AOPEN, tag, line));
                 break;
             default:
                 errorLexico("No existe la etiqueta abierta " + tag);

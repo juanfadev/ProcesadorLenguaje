@@ -29,6 +29,7 @@ public class Parser {
             add(TokensId.H2OPEN);
             add(TokensId.POPEN);
             add(TokensId.IMGOPEN);
+            add(TokensId.AOPEN);
         }
     };
 
@@ -38,6 +39,7 @@ public class Parser {
             add(TokensId.IOPEN);
             add(TokensId.UOPEN);
             add(TokensId.CONTENT);
+            add(TokensId.AOPEN);
         }
     };
 
@@ -189,7 +191,6 @@ public class Parser {
     }
 
 
-
     private Title parseTitleElement() {
         StringBuilder text = new StringBuilder();
         Title t = null;
@@ -253,10 +254,52 @@ public class Parser {
                 lex.returnLastToken();
                 bodyEl = parseImageElement();
                 break;
+            case AOPEN:
+                lex.returnLastToken();
+                bodyEl = parseAElement();
+                break;
             default:
                 errorSintactico("Error, etiqueta '" + token.getLexeme() + "' no reconocida en el head", token.getLine());
         }
         return bodyEl;
+    }
+
+    private A parseAElement() {
+        A p = null;
+        BodyElement innerElement;
+        Token token = lex.getToken();
+        Map<String, String> attributes = new HashMap<>();
+        if (token.getToken() == TokensId.AOPEN) {
+            token = lex.getToken();
+            while (token.getToken() == TokensId.PROPERTY) {
+                String property = token.getLexeme();
+                token = lex.getToken();
+                if (token.getToken() == TokensId.EQUAL) {
+                    token = lex.getToken();
+                    if (token.getToken() == TokensId.VALUE) {
+                        String value = token.getLexeme();
+                        attributes.put(property, value);
+                        token = lex.getToken();
+                    } else {
+                        errorSintactico("Error en propiedad", token.getLine());
+                    }
+                } else {
+                    errorSintactico("Error en propiedad", token.getLine());
+                }
+            }
+            if (token.getToken() != TokensId.TAGCLOSE) {
+                errorSintactico("No se ha cerrado correctamente A", token.getLine());
+            } else {
+                innerElement = parseBodyElement();
+                token = lex.getToken();
+                if (token.getToken() != TokensId.ACLOSE) {
+                    errorSintactico("No se ha cerrado correctamente </a>", token.getLine());
+                } else {
+                    p = new A(token.getLine(), token.getCol(), attributes, innerElement);
+                }
+            }
+        }
+        return p;
     }
 
 
@@ -347,19 +390,61 @@ public class Parser {
                 lex.returnLastToken();
                 iPE = parseStringElement();
                 break;
+            case AOPEN:
+                lex.returnLastToken();
+                iPE = parseInnerAElement();
+                break;
             default:
                 errorSintactico("Error, etiqueta '" + token.getLexeme() + "' no reconocida en el p", token.getLine());
         }
         return iPE;
     }
 
+    private InnerA parseInnerAElement() {
+        InnerA innerA = null;
+        InnerPElement innerElement;
+        Token token = lex.getToken();
+        Map<String, String> attributes = new HashMap<>();
+        if (token.getToken() == TokensId.AOPEN) {
+            token = lex.getToken();
+            while (token.getToken() == TokensId.PROPERTY) {
+                String property = token.getLexeme();
+                token = lex.getToken();
+                if (token.getToken() == TokensId.EQUAL) {
+                    token = lex.getToken();
+                    if (token.getToken() == TokensId.VALUE) {
+                        String value = token.getLexeme();
+                        attributes.put(property, value);
+                        token = lex.getToken();
+                    } else {
+                        errorSintactico("Error en propiedad", token.getLine());
+                    }
+                } else {
+                    errorSintactico("Error en propiedad", token.getLine());
+                }
+            }
+            if (token.getToken() != TokensId.TAGCLOSE) {
+                errorSintactico("No se ha cerrado correctamente A", token.getLine());
+            } else {
+                innerElement = parseStringElement();
+                token = lex.getToken();
+                if (token.getToken() != TokensId.ACLOSE) {
+                    errorSintactico("No se ha cerrado correctamente </a>", token.getLine());
+                } else {
+                    innerA = new InnerA(token.getLine(), token.getCol(), attributes, innerElement.getValue());
+                }
+            }
+        }
+        return innerA;
+    }
+
     private StringElement parseStringElement() {
         StringElement sE = null;
         Token token = lex.getToken();
-        if (token.getToken() == TokensId.CONTENT){
+        if (token.getToken() == TokensId.CONTENT) {
             sE = new StringElement(token.getLine(), token.getCol(), token.getLexeme());
-        }else{
-            errorSintactico("Error en string" , token.getLine());
+        } else {
+            errorSintactico("Error en string", token.getLine());
         }
         return sE;
     }
@@ -367,51 +452,53 @@ public class Parser {
     private B parseBElement() {
         B b = null;
         Token token = lex.getToken();
-        if (token.getToken() == TokensId.BOPEN){
+        if (token.getToken() == TokensId.BOPEN) {
             StringElement sE = parseStringElement();
             token = lex.getToken();
-            if (token.getToken() == TokensId.BCLOSE){
+            if (token.getToken() == TokensId.BCLOSE) {
                 b = new B(token.getLine(), token.getCol(), sE.getValue());
-            }else{
-                errorSintactico("Error al cerrar etiqueta B" , token.getLine());
+            } else {
+                errorSintactico("Error al cerrar etiqueta B", token.getLine());
             }
 
-        }else{
-            errorSintactico("Error al abrir etiqueta B" , token.getLine());
+        } else {
+            errorSintactico("Error al abrir etiqueta B", token.getLine());
         }
         return b;
     }
+
     private I parseIElement() {
         I b = null;
         Token token = lex.getToken();
-        if (token.getToken() == TokensId.IOPEN){
+        if (token.getToken() == TokensId.IOPEN) {
             StringElement sE = parseStringElement();
             token = lex.getToken();
-            if (token.getToken() == TokensId.ICLOSE){
+            if (token.getToken() == TokensId.ICLOSE) {
                 b = new I(token.getLine(), token.getCol(), sE.getValue());
-            }else{
-                errorSintactico("Error al cerrar etiqueta I" , token.getLine());
+            } else {
+                errorSintactico("Error al cerrar etiqueta I", token.getLine());
             }
 
-        }else{
-            errorSintactico("Error al abrir etiqueta I" , token.getLine());
+        } else {
+            errorSintactico("Error al abrir etiqueta I", token.getLine());
         }
         return b;
     }
+
     private U parseUElement() {
         U b = null;
         Token token = lex.getToken();
-        if (token.getToken() == TokensId.UOPEN){
+        if (token.getToken() == TokensId.UOPEN) {
             StringElement sE = parseStringElement();
             token = lex.getToken();
-            if (token.getToken() == TokensId.UCLOSE){
+            if (token.getToken() == TokensId.UCLOSE) {
                 b = new U(token.getLine(), token.getCol(), sE.getValue());
-            }else{
-                errorSintactico("Error al cerrar etiqueta U" , token.getLine());
+            } else {
+                errorSintactico("Error al cerrar etiqueta U", token.getLine());
             }
 
-        }else{
-            errorSintactico("Error al abrir etiqueta U" , token.getLine());
+        } else {
+            errorSintactico("Error al abrir etiqueta U", token.getLine());
         }
         return b;
     }

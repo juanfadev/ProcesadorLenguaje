@@ -12,14 +12,13 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
@@ -88,7 +87,7 @@ public class Browser {
 
     private void createNodes() {
         if (htmlElementsPanel.getComponentCount() > 1) {
-            for (int i = htmlElementsPanel.getComponentCount()-1; i >0; i --) {
+            for (int i = htmlElementsPanel.getComponentCount() - 1; i > 0; i--) {
                 htmlElementsPanel.remove(i);
             }
         }
@@ -103,19 +102,30 @@ public class Browser {
 
     private void addNodes() {
         for (StyledBlock line : page) {
+            nextGridY++;
+            c.gridx = 0;
+            c.gridwidth = 3;
+            c.gridy = nextGridY;
             if (line instanceof StyledLine) {
-                addStyledLine((StyledLine) line);
+                htmlElementsPanel.add(addStyledLine((StyledLine) line), c);
             } else if (line instanceof ImageBlock) {
-                addImageBlock((ImageBlock) line);
+                htmlElementsPanel.add(addImageBlock((ImageBlock) line), c);
+            } else if (line instanceof UrlBlock) {
+                htmlElementsPanel.add(addUrlBlock((UrlBlock) line), c);
             }
         }
     }
 
-    private void addStyledLine(StyledLine line) {
+    /**
+     * 
+     * @param line
+     * @return
+     */
+    private JTextPane addStyledLine(StyledLine line) {
         StyleContext sc = new StyleContext();
         StyledDocument doc = new DefaultStyledDocument(sc);
         try {
-            for (StyledString text : line.getStrings()) {
+            for (StyledContent text : line.getStrings()) {
                 MutableAttributeSet attrs = new SimpleAttributeSet();
                 Color color = getColorByName(text.getProperty("color"));
                 String pixelSize = text.getProperty("font-size");
@@ -164,7 +174,12 @@ public class Browser {
                         System.out.println("No style for text");
                 }
                 doc.insertString(doc.getLength(), " ", null); // Whitespace between tags
+                if (text instanceof StyledLink) {
+                    attrs.addAttribute("href", ((StyledLink) text).getAttribute("href"));
+                }
                 doc.insertString(doc.getLength(), text.getString(), attrs);
+
+
             }
             MutableAttributeSet attrs = new SimpleAttributeSet();
             switch (line.getStrings().get(0).getProperty("text-align")) {
@@ -190,12 +205,45 @@ public class Browser {
         }
         JTextPane tA = new JTextPane(doc);
         tA.setEditable(false);
-        nextGridY++;
+        tA.setPreferredSize(new Dimension(10, getContentHeight(tA.getStyledDocument())));
+        tA.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Element h = getHyperlinkElement(e);
+                if (h != null) {
+                    AttributeSet attribute = h.getAttributes();
+                    if (attribute != null) {
+                        String href = (String) attribute.getAttribute("href");
+                        if (href != null) {
+                            try {
+                                Desktop.getDesktop().browse(new URI(href));
+                            } catch (IOException | URISyntaxException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // the mouse has entered the label
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // the mouse has exited the label
+            }
+        });
+        return tA;
+        /*nextGridY++;
         c.gridx = 0;
         c.gridwidth = 3;
         c.gridy = nextGridY;
         tA.setPreferredSize(new Dimension(10, getContentHeight(tA.getStyledDocument())));
-        htmlElementsPanel.add(tA, c);
+        htmlElementsPanel.add(tA, c);*/
     }
 
     /**
@@ -204,8 +252,9 @@ public class Browser {
      * If neither url neither alt is present, it will not add anything.
      *
      * @param line
+     * @return
      */
-    private void addImageBlock(ImageBlock line) {
+    private JLabel addImageBlock(ImageBlock line) {
         int width = line.getAttributes().get("width") != null ? Integer.parseInt(line.getAttributes().get("width")) : 0;
         int height = line.getAttributes().get("height") != null ? Integer.parseInt(line.getAttributes().get("width")) : 0;
         URL src;
@@ -226,20 +275,68 @@ public class Browser {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            nextGridY++;
+            return wIcon;
+            /*nextGridY++;
             c.gridx = 0;
             c.gridwidth = 3;
             c.gridy = nextGridY;
-            htmlElementsPanel.add(wIcon, c);
+            htmlElementsPanel.add(wIcon, c);*/
         }
     }
 
+    /**
+     * Add component for each block type
+     * @param urlB
+     * @return
+     */
+    private JComponent addUrlBlock(UrlBlock urlB) {
+        JComponent urlComponent = new JTextPane();
+        StyledBlock line = urlB.getInnerBlock();
+        if (line instanceof StyledLine) {
+            urlComponent = addStyledLine((StyledLine) line);
+        } else if (line instanceof ImageBlock) {
+            urlComponent = addImageBlock((ImageBlock) line);
+        } else if (line instanceof UrlBlock) {
+            urlComponent = addUrlBlock((UrlBlock) line);
+        }
+        urlComponent.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        urlComponent.setForeground(Color.BLUE.darker());
+        urlComponent.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI(urlB.getAttributes().get("href")));
+                } catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // the mouse has entered the label
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // the mouse has exited the label
+            }
+        });
+        return urlComponent;
+    }
+
+    /**
+     * Parse html from url
+     * @param htmlUrl
+     * @return
+     * @throws IOException
+     */
     private List<StyledBlock> parseHTML(String htmlUrl) throws IOException {
         InputStreamReader filereader;
         // Preparing for online browsing experience
         if (htmlUrl.contains("http")) {
             filereader = new InputStreamReader(new URL(htmlUrl).openConnection().getInputStream());
-        } else{
+        } else {
             filereader = new FileReader(htmlUrl);
         }
         Lexicon lex = new Lexicon(filereader);
@@ -260,6 +357,11 @@ public class Browser {
         return page.getBlocks();
     }
 
+    /**
+     * Aux method to get color constant by name using reflection
+     * @param name
+     * @return
+     */
     private static Color getColorByName(String name) {
         try {
             return (Color) Color.class.getField(name.toUpperCase()).get(null);
@@ -269,6 +371,11 @@ public class Browser {
         }
     }
 
+    /**
+     * Creates a dummy component with frame width to get paragraph height
+     * @param doc
+     * @return
+     */
     public static int getContentHeight(StyledDocument doc) {
         JTextPane dummyEditorPane = new JTextPane();
         dummyEditorPane.setSize(frame.getWidth(), Short.MAX_VALUE);
@@ -277,8 +384,30 @@ public class Browser {
         return dummyEditorPane.getPreferredSize().height;
     }
 
+    /**
+     * Change text area dimensions based on dummy component.
+     * (Called from listener)
+     * @param tA
+     */
     public static void changeTextDimensions(JTextPane tA) {
         tA.setPreferredSize(new Dimension(10, getContentHeight(tA.getStyledDocument())));
     }
 
+    /**
+     * Aux method to get href attribute based on mouse event position (usually click event)
+     * @param event
+     * @return
+     */
+    private Element getHyperlinkElement(MouseEvent event) {
+        JEditorPane editor = (JEditorPane) event.getSource();
+        int pos = editor.getUI().viewToModel(editor, event.getPoint());
+        if (pos >= 0 && editor.getDocument() != null) {
+            DefaultStyledDocument hdoc = (DefaultStyledDocument) editor.getDocument();
+            Element elem = hdoc.getCharacterElement(pos);
+            if (elem.getAttributes().getAttribute("href") != null) {
+                return elem;
+            }
+        }
+        return null;
+    }
 }

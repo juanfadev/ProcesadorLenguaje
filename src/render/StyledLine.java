@@ -5,22 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 public class StyledLine  implements StyledBlock{
-    List<StyledString> strings;
+    List<StyledContent> strings;
     Map<String, String> paragraphProperties;
 
     public StyledLine() {
         this.strings = new ArrayList<>();
     }
 
-    public void addStyledString (StyledString s){
+    public void addStyledString (StyledContent s){
         strings.add(s);
     }
 
-    public List<StyledString> getStrings() {
+    public List<StyledContent> getStrings() {
         return strings;
     }
 
     public String getLineString(){
-        return strings.stream().map(s-> s.string).reduce("", String::concat);
+        return strings.stream().map(StyledContent::getString).reduce("", String::concat);
     }
 }
