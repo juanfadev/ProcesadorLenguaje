@@ -17,6 +17,12 @@ public class FindCSSVisitor implements HTMLVisitor {
         return cssFile.replace("\"", "");
     }
 
+    /**
+     * Aqui faltaría añadirlos a un array en vez de hacer append para que se pudieran procesar varias stylesheets
+     * @param head
+     * @param param
+     * @return
+     */
     @Override
     public Object visit(Head head, Object param) {
         StringBuilder s = new StringBuilder();
